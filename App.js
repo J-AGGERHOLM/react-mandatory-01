@@ -11,6 +11,8 @@ import MapView, { Marker } from "react-native-maps";
 
 export default function App() {
   //============= for map================//
+
+  //HEEEEJ
   const [markers, setMarkers] = useState([]);
   const region = {
     latitude: 55,
