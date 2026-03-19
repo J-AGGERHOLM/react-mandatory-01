@@ -11,8 +11,6 @@ import MapView, { Marker } from "react-native-maps";
 
 export default function App() {
   //============= for map================//
-
-  //HEEEEJ
   const [markers, setMarkers] = useState([]);
   const region = {
     latitude: 55,
@@ -25,9 +23,19 @@ export default function App() {
     // event har koordinaten indeni
     // destructure for kun at få koordinaterne ud
     const { coordinate } = event.nativeEvent;
-    // Refresh state, så marker bliver opdateret med det nye marker
-    // Delete det gamle marker og tilføj det nye marker
-    setMarkers((prev) => [...prev, coordinate]);
+
+    // Henter marker fra databasen
+    const markersFromDB = data.map((item) => ({
+      latitude: item.latitude,
+      longitude: item.longitude,
+    }));
+    
+    // Indsætter markers fra database.
+    // på longpress sættes ny marker og forrige longpress mark bliver fjernet.
+    setMarkers([
+      ...markersFromDB,
+      coordinate
+    ]);
   }
 
   // =============for notebook: =============//
