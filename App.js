@@ -23,9 +23,29 @@ export default function App() {
     // event har koordinaten indeni
     // destructure for kun at få koordinaterne ud
     const { coordinate } = event.nativeEvent;
-    // Refresh state, så marker bliver opdateret med det nye marker
-    // Delete det gamle marker og tilføj det nye marker
-    setMarkers((prev) => [...prev, coordinate]);
+
+    // Henter marker fra databasen
+    const markersFromDB = data.map((item) => ({
+      latitude: item.latitude,
+      longitude: item.longitude,
+      title: item.text,
+      description: item.description ?? "No description"
+    }));
+    
+    const newMarker = {
+    key: "pressed-marker",
+    latitude: coordinate.latitude,
+    longitude: coordinate.longitude,
+    title: "New marker",
+    description: "Wanna safe marker?",
+  };
+
+    // Indsætter markers fra database.
+    // på longpress sættes ny marker og forrige longpress mark bliver fjernet.
+    setMarkers([
+      ...markersFromDB,
+      newMarker
+    ]);
   }
 
   // =============for notebook: =============//
@@ -121,7 +141,7 @@ export default function App() {
               <MapView style={{ width: "100%", height: "100%" }} onLongPress={handleLongPress} region={region}>
           {markers &&
             markers.map((marker, index) => (
-              <Marker key={index} coordinate={marker} title="Go There" description="Good View"></Marker>
+              <Marker key={index} coordinate={marker} title={marker.title} description={marker.description}></Marker>
             ))}
         </MapView>
       <Modal visible={modalVisible} onDismiss={() => setText("")}>
