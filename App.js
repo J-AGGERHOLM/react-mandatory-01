@@ -26,7 +26,7 @@ export default function App() {
   const [imagePaths, setImagePaths] = useState({});
   const [editObject, setEditObject] = useState({});
   const [modalVisible, setModalVisible] = useState(false);
-  const [values, loading, error] = useCollection(collection(database, "notes"));
+  const [values, loading, error] = useCollection(collection(database, "markers"));
   const data = values?.docs.map((doc) => ({ ...doc.data(), id: doc.id })) ?? [];
 
   useEffect(() => {
@@ -41,6 +41,7 @@ export default function App() {
   if (loading) return <Text>Loading...</Text>;
   if (error) return <Text>Error: {String(error.message || error)}</Text>;
 
+  // Save button send item to database
   async function addItem() {
     if (!text) return;
     await addDoc(collection(database, "notes"), {
@@ -49,16 +50,19 @@ export default function App() {
     setText("");
   }
 
+  //delete button
   async function deleteItem(id) {
     await deleteDoc(doc(database, "notes", id));
   }
 
+  //change local details
   function updateItem(item) {
     setEditObject(item);
     setText(item.text);
     setModalVisible(!modalVisible);
   }
 
+  //update db with changes
   async function saveUpdate() {
     updateDoc(doc(database, "notes", editObject.id), {
       text: text,
@@ -67,6 +71,7 @@ export default function App() {
     setModalVisible(!modalVisible);
   }
 
+  //pick image from mobile phone
   async function pickImage() {
     let result = await ImagePicker.launchImageLibraryAsync({
       allowsEditing: true,
@@ -77,6 +82,7 @@ export default function App() {
     }
   }
 
+  // upload image to db
   async function uploadImage(id) {
     const res = await fetch(imagePath);
     const blob = await res.blob();
@@ -86,6 +92,7 @@ export default function App() {
     });
   }
 
+  // download image from db
   async function downloadImage(id, fileName) {
     getDownloadURL(ref(storage, fileName)).then((url) => {
       console.log("henter billede " + JSON.stringify(url, null, 2));
@@ -93,22 +100,6 @@ export default function App() {
     });
   }
 
-  async function launchCamera() {
-    const result = await ImagePicker.requestCameraPermissionsAsync();
-    if (result.granted === false) {
-      alert("no permission for camera");
-    } else {
-      await ImagePicker.launchCameraAsync({
-        quality: 1,
-      })
-        .then((response) => {
-          if (!response.canceled) {
-            setImagePath(response.assets[0].uri);
-          }
-        })
-        .catch((error) => alert("error med billede " + error));
-    }
-  }
 
   function addLike(item) {
     updateDoc(doc(database, "notes", item.id), {
@@ -125,9 +116,6 @@ export default function App() {
           <Image source={{ uri: imagePath }} style={{ width: 100, height: 100 }} />
           <Pressable onPress={pickImage} style={styles.editButtons}>
             <Text>Pick image</Text>
-          </Pressable>
-          <Pressable onPress={launchCamera} style={styles.editButtons}>
-            <Text>Camera</Text>
           </Pressable>
           <TextInput defaultValue={editObject.text} onChangeText={setText} />
           <Pressable onPress={saveUpdate}>
@@ -167,10 +155,7 @@ export default function App() {
       </Pressable>
 
       <TextInput onChangeText={setText} placeholder="Type here" value={text} />
-      <Pressable style={styles.addBtn} onPress={addItem}>
-        <Text>Add item</Text>
-      </Pressable>
-      <StatusBar style="auto" />
+      
     </View>
   );
 }
