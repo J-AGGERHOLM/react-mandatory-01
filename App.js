@@ -16,9 +16,17 @@ export default function App() {
     latitude: 55,
     longitude: 12,
     latitudeDelta: 2,
-    longitudeDelta: 2,
+    longitudeDelta: 2
   };
 
+  async function handleLongPress(event) {
+    // event har koordinaten indeni
+    // destructure for kun at få koordinaterne ud
+    const { coordinate } = event.nativeEvent;
+    // Refresh state, så marker bliver opdateret med det nye marker
+    // Delete det gamle marker og tilføj det nye marker
+    setMarkers((prev) => [...prev, coordinate]);
+  }
 
   // =============for notebook: =============//
   const [text, setText] = useState("");
@@ -40,7 +48,6 @@ export default function App() {
 
   if (loading) return <Text>Loading...</Text>;
   if (error) return <Text>Error: {String(error.message || error)}</Text>;
-
   async function addItem() {
     if (!text) return;
     await addDoc(collection(database, "notes"), {
@@ -119,7 +126,12 @@ export default function App() {
   return (
     <View style={styles.container}>
       <StatusBar style="auto"></StatusBar>
-      <MapView style={{width: "100%", height: "100%"}} region={region}></MapView>
+              <MapView style={{ width: "100%", height: "100%" }} onLongPress={handleLongPress} region={region}>
+          {markers &&
+            markers.map((marker, index) => (
+              <Marker key={index} coordinate={marker} title="Go There" description="Good View"></Marker>
+            ))}
+        </MapView>
       <Modal visible={modalVisible} onDismiss={() => setText("")}>
         <View style={styles.modalContainer}>
           <Image source={{ uri: imagePath }} style={{ width: 100, height: 100 }} />
