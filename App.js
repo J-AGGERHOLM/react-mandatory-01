@@ -11,6 +11,7 @@ import MapView, { Marker } from "react-native-maps";
 export default function App() {
   // ============= modal / form state =============//
   const [text, setText] = useState("");
+  const [description, setDescription] = useState("");
   const [imagePath, setImagePath] = useState("");
   const [imagePaths, setImagePaths] = useState({});
   const [editObject, setEditObject] = useState(null);
@@ -80,6 +81,7 @@ export default function App() {
 
     const docRef = await addDoc(collection(database, "markers"), {
       text: text,
+      description: description,
       latitude: selectedCoordinate.latitude,
       longitude: selectedCoordinate.longitude,
       likes: 0,
@@ -97,6 +99,7 @@ export default function App() {
 
     await updateDoc(doc(database, "markers", editObject.id), {
       text: text,
+      description: description,
     });
 
     if (imagePath && !imagePath.startsWith("https://")) {
@@ -113,6 +116,7 @@ export default function App() {
   function closeModal() {
     setModalVisible(false);
     setText("");
+    setDescription("");
     setImagePath("");
     setEditObject(null);
     setSelectedCoordinate(null);
@@ -198,7 +202,7 @@ export default function App() {
                 longitude: marker.longitude,
               }}
               title={marker.text || "Marker"}
-              description="Tryk for at redigere"
+              description={marker.description || "Tryk for at redigere"}
               onPress={() => handleMarkerPress(marker)}
             />
           ))}
@@ -222,7 +226,13 @@ export default function App() {
               <Text>Pick image</Text>
             </Pressable>
 
-            <TextInput value={text} onChangeText={setText} placeholder="Write text for marker" style={styles.input} />
+            <TextInput value={text} onChangeText={setText} placeholder="Write title for marker" style={styles.input} />
+            <TextInput
+              value={description}
+              onChangeText={setDescription}
+              placeholder="Write description for marker"
+              style={styles.input}
+            />
 
             <View style={styles.modalButtonRow}>
               <Pressable onPress={editObject ? saveUpdate : addMarker} style={styles.editButtons}>
@@ -236,6 +246,7 @@ export default function App() {
           </View>
         </View>
       </Modal>
+
       <Pressable onPress={openList} style={styles.showListButton}>
         <Text>Show markers</Text>
       </Pressable>
@@ -263,6 +274,8 @@ export default function App() {
                 <Text style={styles.cardText}>{item.text}</Text>
 
                 {imagePaths[item.id] ? <Image source={{ uri: imagePaths[item.id] }} style={styles.cardImage} /> : null}
+
+                <Text style={styles.description}>{item.description}</Text>
 
                 <View style={styles.cardButtonRow}>
                   <Pressable style={styles.editButtons} onPress={() => deleteItem(item.id)}>
@@ -431,5 +444,9 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#ccc",
     zIndex: 20,
+  },
+
+  description: {
+    padding: "5%",
   },
 });
